@@ -1,106 +1,161 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>All-in-One Chatbot</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Image Generator - Ahad Creator</title>
   <style>
-    body{margin:0;font-family:sans-serif;background:#0f1724;color:#e6eef8;display:flex;justify-content:center;padding:20px;}
-    .app{max-width:800px;width:100%;background:#0b1220;border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(2,6,23,0.7);}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-    header h1{margin:0;font-size:18px}
-    header .meta{font-size:12px;color:#94a3b8}
-    .chat{height:65vh;overflow:auto;padding:12px;background:rgba(255,255,255,0.02);border-radius:10px}
-    .msg{margin:8px 0;display:flex}
-    .msg.user{justify-content:flex-end}
-    .bubble{max-width:70%;padding:10px 14px;border-radius:12px;white-space:pre-wrap;line-height:1.4;font-size:14px;}
-    .bubble.user{background:#1f2937;border-bottom-right-radius:4px}
-    .bubble.assistant{background:#111827;border-bottom-left-radius:4px;position:relative}
-    .bubble.assistant button.copy{position:absolute;top:6px;right:6px;font-size:11px;background:rgba(255,255,255,0.1);border:none;color:#fff;border-radius:6px;cursor:pointer;padding:2px 5px}
-    .controls{display:flex;gap:10px;margin-top:12px}
-    textarea{flex:1;min-height:44px;max-height:120px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.05);color:inherit;resize:vertical}
-    button{background:#7c3aed;color:#fff;border:none;padding:10px 14px;border-radius:8px;font-weight:600;cursor:pointer}
-    button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.1);color:#94a3b8}
-    .typing{color:#94a3b8;font-size:13px;margin-left:10px}
-    footer{margin-top:8px;font-size:12px;color:#94a3b8;text-align:center}
-    .spinner{display:inline-block;width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);border-top-color:#fff;animation:spin 1s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1f1f1f, #2c2c54);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(0,0,0,0.6);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.2rem;
+      color: #ffb347;
+    }
+    header p {
+      margin: 0.5rem 0 0;
+      font-size: 1.1rem;
+      color: #ddd;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    textarea {
+      width: 80%;
+      max-width: 600px;
+      height: 100px;
+      border-radius: 10px;
+      border: none;
+      padding: 1rem;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    button {
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      background: #ffb347;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #ff8c00;
+    }
+    #result {
+      margin-top: 2rem;
+      text-align: center;
+    }
+    #result img {
+      max-width: 90%;
+      border-radius: 20px;
+      box-shadow: 0px 0px 20px rgba(255,255,255,0.3);
+    }
+    footer {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: rgba(0,0,0,0.6);
+      text-align: center;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+    footer a {
+      color: #ffb347;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <div>
-        <h1>Ahad All-in-One Chatbot</h1>
-        <div class="meta">Provider: openai-gpt4o</div>
-      </div>
-      <div>
-        <button id="clearBtn" class="secondary">Clear</button>
-        <button id="exportBtn" class="secondary">Export</button>
-      </div>
-    </header>
+  <!-- Header Section -->
+  <header>
+    <h1>🚀 AI Image Generator</h1>
+    <p>Created by <strong>Ahad Creator</strong></p>
+  </header>
 
-    <div id="chat" class="chat"></div>
+  <!-- Main Content -->
+  <main>
+    <!-- Prompt input for user -->
+    <textarea id="prompt" placeholder="Enter your creative prompt..."></textarea>
+    <br/>
+    <!-- Generate button -->
+    <button onclick="generateImage()">Generate Image</button>
+    
+    <!-- Result area -->
+    <div id="result"></div>
+  </main>
 
-    <div class="controls">
-      <textarea id="input" placeholder="Type a message (Enter = send, Shift+Enter = newline)"></textarea>
-      <button id="sendBtn">Send</button>
-    </div>
+  <!-- Footer -->
+  <footer>
+    <p>Owner: <strong>Faizan Ahmad Khichi</strong> | 
+    Contact: <a href="https://wa.me/message/PIMTMADGNLZFJ1" target="_blank">Join on WhatsApp</a></p>
+  </footer>
 
-    <footer id="footerNote">Ready</footer>
-  </div>
-
+  <!-- JavaScript -->
   <script>
-    const API_ENDPOINT = 'https://all-in-one.jokerkeep057.workers.dev/';
-    const API_KEY = 'Bearer FZN-PROJ-A7B3C9-XYZ-ULTRA-SECURE-2025';
-
-    const chatEl = document.getElementById('chat');
-    const inputEl = document.getElementById('input');
-    const sendBtn = document.getElementById('sendBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const exportBtn = document.getElementById('exportBtn');
-    const footerNote = document.getElementById('footerNote');
-
-    let conversation = [];
-
-    function appendMessage(role, text) {
-      const msgWrap = document.createElement('div');
-      msgWrap.className = 'msg ' + role;
-      const bubble = document.createElement('div');
-      bubble.className = 'bubble ' + role;
-      bubble.textContent = text;
-
-      if (role === 'assistant' && text && text.trim() !== '') {
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'copy';
-        copyBtn.textContent = 'Copy';
-        copyBtn.onclick = () => {
-          navigator.clipboard.writeText(text);
-          copyBtn.textContent = '✓';
-          setTimeout(()=>copyBtn.textContent='Copy',1000);
-        };
-        bubble.appendChild(copyBtn);
+    async function generateImage() {
+      const prompt = document.getElementById('prompt').value.trim();
+      if (!prompt) {
+        alert("⚠️ Please enter a prompt first!");
+        return;
       }
 
-      msgWrap.appendChild(bubble);
-      chatEl.appendChild(msgWrap);
-      chatEl.scrollTop = chatEl.scrollHeight;
-    }
+      // Show loading text
+      document.getElementById('result').innerHTML = "<p>⏳ Generating your image... Please wait.</p>";
 
-    function showTyping() {
-      const msgWrap = document.createElement('div');
-      msgWrap.className = 'msg assistant';
-      const bubble = document.createElement('div');
-      bubble.className = 'bubble assistant typing';
-      bubble.innerHTML = '<span class="spinner"></span> Thinking...';
-      msgWrap.appendChild(bubble);
-      chatEl.appendChild(msgWrap);
-      chatEl.scrollTop = chatEl.scrollHeight;
-      return bubble;
-    }
+      try {
+        // API call to your backend (from curl example)
+        const response = await fetch("https://all-in-one.jokerkeep057.workers.dev/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer FZN-PROJ-A7B3C9-XYZ-ULTRA-SECURE-2025"
+          },
+          body: JSON.stringify({
+            mode: "image",
+            provider: "openai",
+            prompt: prompt,
+            width: 1024,
+            height: 1024
+          })
+        });
 
-    async function sendMessage() {
+        const data = await response.json();
+
+        if (data.success && data.data && data.data.url) {
+          // Display generated image
+          document.getElementById('result').innerHTML = `
+            <h2>✨ Generated Image:</h2>
+            <img src="${data.data.url}" alt="AI Generated Image"/>
+            <p><em>Prompt:</em> ${data.data.prompt}</p>
+          `;
+        } else {
+          document.getElementById('result').innerHTML = "<p>❌ Failed to generate image. Please try again.</p>";
+        }
+
+      } catch (error) {
+        console.error(error);
+        document.getElementById('result').innerHTML = "<p>⚠️ Error: Unable to connect to API.</p>";
+      }
+    }
+  </script>
+</body>
+</html>
       const text = inputEl.value.trim();
       if (!text) return;
       appendMessage('user', text);
