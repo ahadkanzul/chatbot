@@ -123,7 +123,7 @@
 <body>
   <header>
     <h1>Ahad AI Image Generator</h1>
-    <p>Create AI-powered images instantly</p>
+    <p>Create AI-powered images in multiple styles</p>
   </header>
 
   <main>
@@ -153,15 +153,18 @@
       gallery.innerHTML = "<p>Generating images...</p>";
 
       const prompt = document.getElementById('prompt').value;
-      const url = `https://fak-images-generators.jokerkeep057.workers.dev/?key=32563&prompt=${encodeURIComponent(prompt)}`;
+      const baseUrl = `https://fak-images-generators.jokerkeep057.workers.dev/?key=32563&prompt=${encodeURIComponent(prompt)}`;
 
-      // Create 4 images with download buttons
+      // Randomly choose 2, 3, or 4 styles
+      const numImages = Math.floor(Math.random() * 3) + 2; 
       let html = '';
-      for (let i = 1; i <= 4; i++) {
+
+      for (let i = 1; i <= numImages; i++) {
+        const imageUrl = `${baseUrl}&style=${i}`;
         html += `
           <div class="card">
-            <img src="${url}&style=${i}" alt="AI Generated Image ${i}">
-            <a class="download-btn" href="${url}&style=${i}" download="ai-image-${i}.jpg">Download</a>
+            <img src="${imageUrl}" alt="AI Generated Image Style ${i}">
+            <a class="download-btn" href="${imageUrl}" download="ai-image-style-${i}.jpg">Download</a>
           </div>
         `;
       }
