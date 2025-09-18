@@ -1,0 +1,170 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>All-in-One Chatbot</title>
+  <style>
+    body{margin:0;font-family:sans-serif;background:#0f1724;color:#e6eef8;display:flex;justify-content:center;padding:20px;}
+    .app{max-width:800px;width:100%;background:#0b1220;border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(2,6,23,0.7);}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    header h1{margin:0;font-size:18px}
+    header .meta{font-size:12px;color:#94a3b8}
+    .chat{height:65vh;overflow:auto;padding:12px;background:rgba(255,255,255,0.02);border-radius:10px}
+    .msg{margin:8px 0;display:flex}
+    .msg.user{justify-content:flex-end}
+    .bubble{max-width:70%;padding:10px 14px;border-radius:12px;white-space:pre-wrap;line-height:1.4;font-size:14px;}
+    .bubble.user{background:#1f2937;border-bottom-right-radius:4px}
+    .bubble.assistant{background:#111827;border-bottom-left-radius:4px;position:relative}
+    .bubble.assistant button.copy{position:absolute;top:6px;right:6px;font-size:11px;background:rgba(255,255,255,0.1);border:none;color:#fff;border-radius:6px;cursor:pointer;padding:2px 5px}
+    .controls{display:flex;gap:10px;margin-top:12px}
+    textarea{flex:1;min-height:44px;max-height:120px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.05);color:inherit;resize:vertical}
+    button{background:#7c3aed;color:#fff;border:none;padding:10px 14px;border-radius:8px;font-weight:600;cursor:pointer}
+    button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.1);color:#94a3b8}
+    .typing{color:#94a3b8;font-size:13px;margin-left:10px}
+    footer{margin-top:8px;font-size:12px;color:#94a3b8;text-align:center}
+    .spinner{display:inline-block;width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);border-top-color:#fff;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>Ahad All-in-One Chatbot</h1>
+        <div class="meta">Provider: openai-gpt4o</div>
+      </div>
+      <div>
+        <button id="clearBtn" class="secondary">Clear</button>
+        <button id="exportBtn" class="secondary">Export</button>
+      </div>
+    </header>
+
+    <div id="chat" class="chat"></div>
+
+    <div class="controls">
+      <textarea id="input" placeholder="Type a message (Enter = send, Shift+Enter = newline)"></textarea>
+      <button id="sendBtn">Send</button>
+    </div>
+
+    <footer id="footerNote">Ready</footer>
+  </div>
+
+  <script>
+    const API_ENDPOINT = 'https://all-in-one.jokerkeep057.workers.dev/';
+    const API_KEY = 'Bearer FZN-PROJ-A7B3C9-XYZ-ULTRA-SECURE-2025';
+
+    const chatEl = document.getElementById('chat');
+    const inputEl = document.getElementById('input');
+    const sendBtn = document.getElementById('sendBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const footerNote = document.getElementById('footerNote');
+
+    let conversation = [];
+
+    function appendMessage(role, text) {
+      const msgWrap = document.createElement('div');
+      msgWrap.className = 'msg ' + role;
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble ' + role;
+      bubble.textContent = text;
+
+      if (role === 'assistant' && text && text.trim() !== '') {
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy';
+        copyBtn.textContent = 'Copy';
+        copyBtn.onclick = () => {
+          navigator.clipboard.writeText(text);
+          copyBtn.textContent = '✓';
+          setTimeout(()=>copyBtn.textContent='Copy',1000);
+        };
+        bubble.appendChild(copyBtn);
+      }
+
+      msgWrap.appendChild(bubble);
+      chatEl.appendChild(msgWrap);
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    function showTyping() {
+      const msgWrap = document.createElement('div');
+      msgWrap.className = 'msg assistant';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble assistant typing';
+      bubble.innerHTML = '<span class="spinner"></span> Thinking...';
+      msgWrap.appendChild(bubble);
+      chatEl.appendChild(msgWrap);
+      chatEl.scrollTop = chatEl.scrollHeight;
+      return bubble;
+    }
+
+    async function sendMessage() {
+      const text = inputEl.value.trim();
+      if (!text) return;
+      appendMessage('user', text);
+      conversation.push({ role: 'user', content: text });
+      inputEl.value = '';
+      sendBtn.disabled = true;
+
+      const typingBubble = showTyping();
+
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': API_KEY
+          },
+          body: JSON.stringify({
+            mode: 'chat',
+            provider: 'openai-gpt4o',
+            prompt: text
+          })
+        });
+
+        const data = await res.json();
+        footerNote.textContent = `Owner: ${data.owner} | Channel: ${data.channel}`;
+
+        typingBubble.parentElement.remove(); // remove typing bubble
+        const reply = data?.data?.response || 'No response';
+        appendMessage('assistant', reply);
+        conversation.push({ role: 'assistant', content: reply });
+      } catch (err) {
+        typingBubble.textContent = 'Error: ' + err.message;
+      } finally {
+        sendBtn.disabled = false;
+        chatEl.scrollTop = chatEl.scrollHeight;
+      }
+    }
+
+    sendBtn.onclick = sendMessage;
+    inputEl.addEventListener('keydown', e=>{
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    clearBtn.onclick = ()=>{
+      chatEl.innerHTML = '';
+      conversation = [];
+      footerNote.textContent = 'Conversation cleared';
+    };
+
+    exportBtn.onclick = ()=>{
+      const blob = new Blob([JSON.stringify(conversation,null,2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'chat_history.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    // Greeting
+    appendMessage('assistant', 'Hello 👋 I am your chatbot. Ask me anything!');
+  </script>
+</body>
+</html>
