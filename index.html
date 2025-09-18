@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ahad AI Image Generator</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    header {
+      font-size: 2.8rem;
+      margin-bottom: 15px;
+      font-weight: bold;
+      color: #00ffe7;
+      text-shadow: 0px 0px 20px #00ffe7;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 25px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0px 0px 25px rgba(0,0,0,0.6);
+    }
+    input {
+      width: 75%;
+      padding: 14px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      outline: none;
+    }
+    button {
+      padding: 14px 28px;
+      border: none;
+      border-radius: 12px;
+      background: #00ffe7;
+      color: black;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #00c7b8;
+      transform: scale(1.05);
+    }
+    .images {
+      margin-top: 25px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 18px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 10px;
+      box-shadow: 0px 0px 15px rgba(0,0,0,0.6);
+      transition: transform 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .images img {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+    .download-btn {
+      display: inline-block;
+      padding: 8px 15px;
+      background: #00ffe7;
+      color: black;
+      font-weight: bold;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+    .download-btn:hover {
+      background: #00c7b8;
+    }
+    /* Loading spinner */
+    .loader {
+      border: 5px solid rgba(255,255,255,0.2);
+      border-top: 5px solid #00ffe7;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      margin: 20px auto;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <header>⚡ Ahad AI Image Generator ⚡</header>
+  <div class="container">
+    <p>Type a creative idea below and generate powerful AI images instantly.</p>
+    <input type="text" id="prompt" placeholder="Type your image idea...">
+    <br>
+    <button onclick="generateImages()">Generate Images</button>
+    <div id="images"></div>
+  </div>
+
+  <script>
+    async function generateImages() {
+      const prompt = document.getElementById('prompt').value.trim();
+      const imagesDiv = document.getElementById('images');
+      if (!prompt) {
+        alert("⚠️ Please enter a prompt.");
+        return;
+      }
+      imagesDiv.innerHTML = '<div class="loader"></div><p>Generating images...</p>';
+      
+      try {
+        let html = '<div class="images">';
+        for (let i = 1; i <= 4; i++) {
+          const url = `https://fak-images-generators.jokerkeep057.workers.dev/?key=32563&prompt=${encodeURIComponent(prompt + " style " + i)}`;
+          html += `
+            <div class="card">
+              <img src="${url}" alt="Generated Image ${i}">
+              <a class="download-btn" href="${url}" download="ahad-ai-image-${i}.png">⬇ Download</a>
+            </div>
+          `;
+        }
+        html += '</div>';
+        imagesDiv.innerHTML = html;
+      } catch (error) {
+        imagesDiv.innerHTML = "<p>❌ Failed to load images.</p>";
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
