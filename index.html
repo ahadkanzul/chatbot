@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Professional AI Image Generator</title>
+  <style>
+    :root {
+      --primary-color: #00ff88;
+      --primary-dark: #00cc66;
+      --background-dark: #0d1117;
+      --card-bg: #161b22;
+      --text-light: #e6edf3;
+      --gradient-start: #0a0f1c;
+      --gradient-end: #1e2a47;
+      --error-color: #ff4757;
+      --success-color: #2ed573;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--background-dark);
+      color: var(--text-light);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    header {
+      text-align: center;
+      padding: 30px 15px;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      border-bottom: 2px solid var(--primary-color);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    header h1 {
+      margin: 0 0 10px;
+      font-size: 2.5rem;
+      color: var(--primary-color);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    
+    .prompt-section {
+      background: rgba(22, 27, 34, 0.8);
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .prompt-box {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .prompt-box input {
+      flex: 1;
+      padding: 15px;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-light);
+      transition: all 0.3s ease;
+    }
+    
+    .prompt-box input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .prompt-box input::placeholder {
+      color: rgba(230, 237, 243, 0.6);
+    }
+    
+    .prompt-box button {
+      background: var(--primary-color);
+      border: none;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: #000;
+      min-width: 140px;
+    }
+    
+    .prompt-box button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 255, 136, 0.3);
+    }
+    
+    .prompt-box button:disabled {
+      background: #555;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .style-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .style-option {
+      padding: 8px 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    
+    .style-option:hover {
+      background: rgba(0, 255, 136, 0.2);
+    }
+    
+    .style-option.active {
+      background: var(--primary-color);
+      color: #000;
+      font-weight: 600;
+    }
+    
+    .notification {
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      display: none;
+    }
+    
+    .notification.error {
+      background: rgba(255, 71, 87, 0.2);
+      border-left: 4px solid var(--error-color);
+      display: block;
+    }
+    
+    .notification.success {
+      background: rgba(46, 213, 115, 0.2);
+      border-left: 4px solid var(--success-color);
+      display: block;
+    }
+    
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 25px;
+    }
+    
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .card h3 {
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+      color: var(--primary-color);
+    }
+    
+    .image-container {
+      position: relative;
+      width: 100%;
+      padding-top: 100%; /* 1:1 Aspect Ratio */
+      overflow: hidden;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .card img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    
+    .card img.loading {
+      opacity: 0.7;
+      filter: blur(5px);
+    }
+    
+    .card img:hover {
+      transform: scale(1.03);
+    }
+    
+    .card-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: auto;
+    }
+    
+    .download-btn, .regenerate-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 15px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      gap: 5px;
+    }
+    
+    .download-btn {
+      background: var(--primary-color);
+      color: #000;
+    }
+    
+    .download-btn:hover {
+      background: var(--primary-dark);
+    }
+    
+    .regenerate-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-light);
+      border: none;
+      cursor: pointer;
+    }
+    
+    .regenerate-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Lightbox */
+    .lightbox {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .lightbox.active {
+      display: flex;
+      opacity: 1;
+    }
+    
+    .lightbox-content {
+      position: relative;
+      max-width: 90%;
+      max-height: 90%;
+    }
+    
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+    }
+    
+    .lightbox-close {
+      position: absolute;
+      top: -40px;
+      right: 0;
+      color: #fff;
+      font-size: 2.5rem;
+      cursor: pointer;
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+    
+    .lightbox-close:hover {
+      color: var(--primary-color);
+    }
+    
+    .lightbox-caption {
+      position: absolute;
+      bottom: -40px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 30px;
+      margin-top: 50px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .prompt-box {
+        flex-direction: column;
+      }
+      
+      .gallery {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      }
+    }
+    
+    @media (max-width: 480px) {
+      header h1 {
+        font-size: 2rem;
+      }
+      
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>AI Image Generator</h1>
+    <p>Transform your imagination into stunning visual art</p>
+  </header>
+
+  <div class="container">
+    <section class="prompt-section">
+      <div class="prompt-box">
+        <input type="text" id="promptInput" placeholder="Describe what you want to see..." autocomplete="off">
+        <button id="generateBtn" onclick="generateImages()">Generate Images</button>
+      </div>
+      
+      <div class="style-options">
+        <div class="style-option active" data-style="realistic">Realistic</div>
+        <div class="style-option" data-style="cartoon">Cartoon</div>
+        <div class="style-option" data-style="cyberpunk">Cyberpunk</div>
+        <div class="style-option" data-style="fantasy">Fantasy</div>
+      </div>
+      
+      <div id="notification" class="notification"></div>
+    </section>
+
+    <div id="gallery" class="gallery">
+      <div class="card">
+        <div class="image-container">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='%23333'%3E%3Crect width='200' height='200' fill='%23222'/%3E%3Cpath d='M80 50h40v100H80z' fill='%23333'/%3E%3Ccircle cx='100' cy='100' r='30' fill='%23333'/%3E%3C/svg%3E" alt="Placeholder">
+        </div>
+        <h3>Your generated image will appear here</h3>
+        <p>Enter a prompt and click generate to create amazing AI art</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox">
+    <div class="lightbox-content">
+      <span class="lightbox-close">&times;</span>
+      <img id="lightbox-img" src="" alt="">
+      <div class="lightbox-caption" id="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <footer>
+    <p>AI Image Generator &copy; 2023 | Powered by AI Technology</p>
+  </footer>
+
+  <script>
+    // Global state
+    const state = {
+      currentStyles: ['realistic'],
+      isGenerating: false
+    };
+
+    // DOM Elements
+    const promptInput = document.getElementById('promptInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const gallery = document.getElementById('gallery');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+    const lightboxClose = document.querySelector('.lightbox-close');
+    const notification = document.getElementById('notification');
+    const styleOptions = document.querySelectorAll('.style-option');
+
+    // Initialize the application
+    function init() {
+      // Event listeners
+      promptInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') generateImages();
+      });
+      
+      lightboxClose.addEventListener('click', closeLightbox);
+      lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) closeLightbox();
+      });
+      
+      // Style selection
+      styleOptions.forEach(option => {
+        option.addEventListener('click', toggleStyle);
+      });
+    }
+
+    // Toggle style selection
+    function toggleStyle(e) {
+      const style = e.target.dataset.style;
+      
+      if (state.currentStyles.includes(style)) {
+        if (state.currentStyles.length > 1) {
+          state.currentStyles = state.currentStyles.filter(s => s !== style);
+          e.target.classList.remove('active');
+        }
+      } else {
+        state.currentStyles.push(style);
+        e.target.classList.add('active');
+      }
+    }
+
+    // Show notification
+    function showNotification(message, type = 'error') {
+      notification.textContent = message;
+      notification.className = `notification ${type}`;
+      
+      // Auto hide after 5 seconds
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 5000);
+    }
+
+    // Generate images based on prompt
+    async function generateImages() {
+      const prompt = promptInput.value.trim();
+      
+      if (!prompt) {
+        showNotification('Please enter a prompt to generate images');
+        promptInput.focus();
+        return;
+      }
+      
+      if (state.isGenerating) return;
+      
+      state.isGenerating = true;
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = '<span class="loading-spinner"></span> Generating...';
+      
+      // Clear previous results
+      gallery.innerHTML = '';
+      
+      try {
+        // Create image cards for each selected style
+        for (const style of state.currentStyles) {
+          const card = createImageCard(prompt, style);
+          gallery.appendChild(card);
+          
+          // Generate the image
+          await generateImage(prompt, style, card);
+        }
+        
+        showNotification('Images generated successfully!', 'success');
+      } catch (error) {
+        console.error('Error generating images:', error);
+        showNotification('Failed to generate images. Please try again.');
+      } finally {
+        state.isGenerating = false;
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generate Images';
+      }
+    }
+
+    // Create an image card
+    function createImageCard(prompt, style) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <h3>${style.charAt(0).toUpperCase() + style.slice(1)}</h3>
+        <div class="image-container">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='%23333'%3E%3Crect width='200' height='200' fill='%23222'/%3E%3Cpath d='M80 50h40v100H80z' fill='%23333'/%3E%3Ccircle cx='100' cy='100' r='30' fill='%23333'/%3E%3C/svg%3E" 
+               alt="${prompt}" class="loading">
+        </div>
+        <div class="card-actions">
+          <a href="#" class="download-btn" style="display: none;">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+            </svg>
+            Download
+          </a>
+          <button class="regenerate-btn" data-style="${style}">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+              <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+            </svg>
+            Regenerate
+          </button>
+        </div>
+      `;
+      
+      // Add event listeners
+      const img = card.querySelector('img');
+      const downloadBtn = card.querySelector('.download-btn');
+      const regenerateBtn = card.querySelector('.regenerate-btn');
+      
+      img.addEventListener('click', () => openLightbox(img.src, `${prompt} (${style})`));
+      
+      regenerateBtn.addEventListener('click', async () => {
+        regenerateBtn.innerHTML = '<span class="loading-spinner"></span>';
+        regenerateBtn.disabled = true;
+        
+        await generateImage(prompt, style, card);
+        
+        regenerateBtn.innerHTML = `
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+            <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+          </svg>
+          Regenerate
+        `;
+        regenerateBtn.disabled = false;
+      });
+      
+      return card;
+    }
+
+    // Generate a single image
+    async function generateImage(prompt, style, card) {
+      const fullPrompt = `${prompt} ${style}`;
+      const img = card.querySelector('img');
+      const downloadBtn = card.querySelector('.download-btn');
+      
+      try {
+        // In a real implementation, this would be an API call
+        // Using a mock implementation for demonstration
+        const url = await mockImageGeneration(fullPrompt);
+        
+        img.src = url;
+        img.alt = fullPrompt;
+        img.classList.remove('loading');
+        
+        // Update download link
+        downloadBtn.href = url;
+        downloadBtn.download = `${prompt.replace(/\s+/g, '_')}_${style}.jpg`;
+        downloadBtn.style.display = 'inline-flex';
+      } catch (error) {
+        console.error(`Error generating ${style} image:`, error);
+        img.alt = 'Failed to generate image';
+        img.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 200 200\' fill=\'%23333\'%3E%3Crect width=\'200\' height=\'200\' fill=\'%23444\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'monospace\' font-size=\'12\' fill=\'%23999\'%3EError%3C/text%3E%3C/svg%3E';
+        showNotification(`Failed to generate ${style} image`, 'error');
+      }
+    }
+
+    // Mock image generation function
+    // In a real implementation, this would call an actual API
+    async function mockImageGeneration(prompt) {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 2000));
+      
+      // Return a placeholder image URL with the prompt as a parameter
+      // In a real implementation, this would be the URL from the AI image generation API
+      const width = 512;
+      const height = 512;
+      const colors = ['6e3bbc', '4b8bbe', 'e34b8b', '4bad5f', 'bd3c3c'];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      
+      return `https://via.placeholder.com/${width}x${height}/${color}/ffffff?text=${encodeURIComponent(prompt)}`;
+    }
+
+    // Open lightbox with image
+    function openLightbox(src, caption) {
+      lightboxImg.src = src;
+      lightboxCaption.textContent = caption;
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden'; // Prevent scrolling
+    }
+
+    // Close lightbox
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = ''; // Re-enable scrolling
+    }
+
+    // Initialize the app when DOM is loaded
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
